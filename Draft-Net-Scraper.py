@@ -84,10 +84,20 @@ def scrape_players(player_list, player_graph):
         soup = BeautifulSoup(source.content,'html.parser')
 
         player.data['comparisons'] = []
+        all_comparison_response = []
         all_comparison_response = soup(text=re.compile(r'NBA Comparison:', re.IGNORECASE))
-        if len(all_comparison_response) == 0:
-            print(f'*** No comparisons for {player.data["profile_link"]}')
 
+        if len(all_comparison_response) == 0:
+            all_comparison_response = soup(text=re.compile(r'NBA Comparison;', re.IGNORECASE))
+
+        if len(all_comparison_response) == 0:
+            all_comparison_response = soup(text=re.compile(r'NBA\u00A0Comparison:', re.IGNORECASE))
+
+        if len(all_comparison_response) == 0:
+            all_comparison_response = soup(text=re.compile(r'NBA Comparson:', re.IGNORECASE))
+
+        if len(all_comparison_response) == 0:
+            print(f'***** No comparisons for {player_name}, {player.data["profile_link"]}')
 
         for comparison_response in all_comparison_response:
             comparison = comparison_response.replace('NBA Comparison: ', '').replace('NBA comparison: ', '').strip()
