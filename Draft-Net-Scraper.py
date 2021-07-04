@@ -42,9 +42,12 @@ class Player:
             'position': self.data['position'],
             'image_link': self.data['image_link'],
             'profile_link': self.data['profile_link'],
-            'comparisons': self.data['comparisons'],
+            'comparisons': self.data.get('comparisons', []),
         }
 
+class Encoder(json.JSONEncoder):
+        def default(self, o):
+            return o.__dict__
 
 def scrape_big_board():
     base_big_board_url = 'https://www.nbadraft.net/ranking/bigboard/?year-ranking=$[year]'
@@ -87,19 +90,13 @@ def scrape_players(player_list, player_graph):
 
 
         for comparison_response in all_comparison_response:
-            comparison = comparison_response.replace('NBA Comparison: ', '').replace('NBA comparison: ', '')
+            comparison = comparison_response.replace('NBA Comparison: ', '').replace('NBA comparison: ', '').strip()
             comparisons = comparison.split('/')
             player.data['comparisons'] = comparisons
 
         player_graph['comparisons'][player_name] = player.data['comparisons']
-        player_graph['players'][player_name] = player
 
-        time.sleep(2)
-
-        count += 1
-
-        if count > 4:
-            break
+        #time.sleep(2)
 
 
 
@@ -109,16 +106,13 @@ def create_json(player_list, player_graph):
     file.write(player_list_json_string)
 
     file = open("player_graph_data.json", "w")
-    file.write(json.dumps(player_graph, indent=2))
+    file.write(json.dumps(player_graph, indent=2, cls=Encoder))
 
 
 
 
 player_graph = {
     "comparisons": {
-
-    },
-    "players": {
 
     }
 }
