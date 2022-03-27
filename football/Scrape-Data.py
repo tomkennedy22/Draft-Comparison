@@ -81,12 +81,17 @@ def parse_dt_from_url(url):
     return url_dt
 
 
-def scrape_wayback(wayback_url):
+def scrape_wayback(wayback_url, last_url):
 
 
     source = requests.get(wayback_url)
     print(source)
     print(source.url)
+    if last_url == source.url:
+        print('SKIPPING')
+        return {'last_url': last_url, 'action': 'skip'}
+
+    last_url = source.url
     print(parse_dt_from_url(source.url))
     
     soup = BeautifulSoup(source.content,'html.parser')
@@ -122,12 +127,17 @@ def scrape_wayback(wayback_url):
 
     time.sleep(1)
 
+    return {'last_url': last_url}
+
     #return player_list
 
 
 def scrape_stuff():
+    last_url = ''
+    counter = 1
     for mock_year in range(2011, 2012):
         print('mock_year', mock_year)
+
 
         for mock_web_year in range(mock_year - 3, mock_year + 1):
             print('mock_web_year', mock_web_year)
@@ -137,10 +147,17 @@ def scrape_stuff():
                 mock_url = mock_url.replace('{year}', f'{mock_year}')
                 mock_url = mock_url.replace('{round_modifier}', '_1')
 
-                scrape_wayback(mock_url)
-                return 1
+                results = scrape_wayback(mock_url, last_url)
+                last_url = results['last_url']
+
+                counter +=1
+
+                if counter > 5:
+                    return 0
+                
 
 scrape_stuff()
+
 
 
 #scrape_wayback('https://web.archive.org/web/20090101/http://www.walterfootball.com/draft2012_1.php')
